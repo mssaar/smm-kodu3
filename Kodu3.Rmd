@@ -1,0 +1,45 @@
+---
+title: "Kodu3"
+author: "Mark Sverker Saar"
+date: "2025-11-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(readxl)
+andmed <- read_excel("gender_equality_index_data.xlsx", sheet = "women", range = "A17:I44", col_names = TRUE)
+```
+
+```{r}
+library(countrycode)
+library(dplyr)
+library(stringr)
+#Muudame Country veeru riikide nimed lühemaks, aga loome igaks juhuks selleks uue veeru
+andmed$iso2 <- countrycode(andmed$Country, origin = "country.name", destination = "iso2c")  # Kahetähelised koodid
+andmed$Country <- andmed$iso2 #Asendame Country veerus pikad nimed lühikestega
+andmed$iso2 <- NULL #Kustutame veeru, kuna seda pole enam vaja
+
+#Jäta veergude nimedes ainult eelviimased 4 sõna 
+andmed <- andmed %>%
+  rename_with(~ sapply(str_split(.x, " "), function(words) {
+    w <- tail(words, 5)         # Võta viimased 5 sõna
+    w <- head(w, 4)             # Jäta neist viimane sõna välja
+    paste(w, collapse = " ")  # Ühenda 4 sõna tagasi kokku
+  }))
+
+```
+
+
+```{r}
+num_andmed <- andmed[, -1]#Võtame kõik veerud, v.a. esimene(Country)
+sapply(num_andmed, function(x) c(Keskmine = mean(x), Dispersioon = var(x)))
+dfsc$Country <- andmed$Country #Paneme riikide nimed juurde
+```
+
+```{r}
+#Teostame peakompo analüüsi
+pr.out <- prcomp(dfsc, scale =TRUE, center=TRUE)
+biplot(pr.out, scale = 0)
+```
+
+
